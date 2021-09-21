@@ -5,18 +5,31 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Services\GiftsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class DefaultController extends AbstractController
 {
 
+    public function __construct($logger)
+    {
+        // use $logger service
+    }
    
     /**
      * @Route("/", name="default")
      */
-    public function index(GiftsService $gifts)
+    public function index(GiftsService $gifts, 
+            Request $request,
+            SessionInterface $session    
+        )
     {
+        // --------- basics & Doctrine -----------
         // $users = ['Adam', 'Jacek', 'Piotr', 'Robert'];
 
         // $user1 = new User();
@@ -36,12 +49,42 @@ class DefaultController extends AbstractController
 
         // exit($entityManager->flush());
 
+        // ------ Cookies --------
+        // $cookie = new Cookie('jag_cookie', 'jag_value', time() + (2 * 365 * 24 * 60 * 60));
+        // $res = new Response();
+        // $res->headers->setCookie($cookie);
+        // $res->send();
         
-        $users = $this->getDoctrine()->getRepository(User::class)->findAll();
+        // $res = new Response();
+        // $res->headers->clearCookie('jag_cookie');
+        // $res->send();
+        
+        // exit($request->cookies->get('jag_cookie'));
 
+        // ------ Session --------
+        // $session->set('name', 'session value'); // removes only 
+        // // $session->remove('name');
+        // $session->clear(); // removes all session data
+        // if($session->has('name'))
+        // {
+        //     exit($session->get('name'));
+        // }
+        
+        // exit($request->query->get('page', 'default_value'));
+        // exit($request->server->get('HTTP_HOST'));
+        // $request->isXmlHttpRequest(); // is it an Ajax request?
+        // $request->request->get('page');
+        // $request->files->get('foo');
+        
         $this->addFlash('notice', 'Your changes have been saved');
         $this->addFlash('warning', 'Your changes have warnings');
         
+        $users = $this->getDoctrine()->getRepository(User::class)->findAll();
+
+        if(!$users)
+        {
+            throw $this->createNotFoundException('The users dont exist');
+        }
         
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
@@ -49,6 +92,66 @@ class DefaultController extends AbstractController
             'random_gift' => $gifts->gifts,
         ]);
 
+    }
+
+    /**
+     * @Route("/generate-url/{param?}", name="generate_url")
+     */
+    public function generate_url()
+    {
+        exit($this->generateUrl(
+                'generate_url',
+                array('param' => 10),
+                UrlGeneratorInterface::ABSOLUTE_URL
+            ));
+
+    }
+
+    /**
+     * @Route("/download")
+     */
+    public function download()
+    {
+        $path = $this->getParameter('download_directory');
+
+        return $this->file($path.'file.pdf');
+    }
+
+    /**
+     * @Route("/redirect-test")
+     */
+    public function redirectTest()
+    {
+        return $this->redirectToRoute('route_to_redirect', array('param' => 10));
+    }
+
+    /**
+     * @Route("/url-to-redirect/{param?}", name="route_to_redirect")
+     */
+    public function methodToRedirect()
+    {
+        exit('Test redirection');
+    }
+
+    /**
+     * @Route("/forwarding-to-controller")
+     */
+    public function forwardingToController()
+    {
+        $response = $this->forward(
+            'App\Controller\DefaultController::methodToForwardTo',
+            array('param' => 5)
+        );
+
+        return $response;
+    }
+
+    /**
+     * @Route("/url-to-forwar-to/{param?}", name="rout_to_forward_to")
+     */
+    public function methodToForwardTo($param)
+    {
+        exit('Test controller forwarding - ' . $param);
     }
 
     /**
