@@ -20,11 +20,24 @@ class DefaultController extends AbstractController
     {
         // use $logger service
     }
+
+    /**
+     * @Route("/home", name="default", name="home")
+     */
+    public function index()
+    {
+        //exit('Index here');
+        return $this->render(
+            'default/index.html.twig', [
+                'controller_name' => 'DefaultController'
+            ]
+        );
+    }
    
     /**
-     * @Route("/", name="default")
+     * @Route("/", name="default_demo")
      */
-    public function index(GiftsService $gifts, 
+    public function index_demo(GiftsService $gifts, 
             Request $request,
             SessionInterface $session    
         )
