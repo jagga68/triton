@@ -3,8 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use Doctrine\DBAL\ForwardCompatibility\Result;
-use PhpParser\Node\Expr\Isset_;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -120,4 +119,59 @@ class DefaultController extends AbstractController
 
         return $this->redirectToRoute('show-users');
     }
+
+    /**
+     * @Route("/raw-query", name="raw-query")
+     */
+    public function rawQuery(\Doctrine\DBAL\Driver\Connection $connection): Response
+    {
+
+        $sql = 'SELECT * 
+                FROM 
+                    user u 
+                WHERE 
+                    u.id > 3
+                ';
+
+        $stmt = $connection->prepare($sql);
+        $stmt->execute(['id' => 3 ]);
+
+        $users_array = $stmt->fetchAll();
+
+        return $this->render('default/show-users.html.twig', [
+            'users' => $users_array,
+        ]);
+
+    }
+
+    /**
+     * @Route("/user/{id}", name="user")
+     */
+    public function paramConverter(User $user)
+    {
+        // below is not needed when using sensio/framework-extra-bundle
+        // $entityManager = $this->getDoctrine()->getManager();
+
+        //dump($user);
+
+        return $this->redirectToRoute('show-users', ['id' => $user->getId()]);
+
+    }
+
+    /**
+     * @Route("/callback", name="callback")
+     */
+    public function callback()
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $user = new User();
+        $user->setName('Jacol 500');
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return new Response('OK!');
+
+    }
+
 }
