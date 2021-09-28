@@ -2,7 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\Address;
 use App\Entity\User;
+use App\Entity\Author;
+use App\Entity\File;
+use App\Entity\Video;
+use App\Entity\Pdf;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -171,6 +176,184 @@ class DefaultController extends AbstractController
         $entityManager->flush();
 
         return new Response('OK!');
+
+    }
+
+    /**
+     * @Route("/add-videos", name="add-videos")
+     */
+    public function addVideos()
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $user = new User();
+        $user->setName('Magda');
+
+        for ($i=3; $i < 6; $i++) 
+        { 
+            $video = new Video();
+            $video->setTitle('Video title ' . $i);
+            $user->addVideo($video);
+            $entityManager->persist($video);
+        }
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        dump('Created a video with the id of ' . $video->getId());
+        dump('Created a user with the id of ' . $user->getId());
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+
+    }
+
+    /**
+     * @Route("/show-videos/{userId}", name="show-videos")
+     */
+    public function showVideos(int $userId)
+    {
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['id' => $userId]);
+
+        foreach ($user->getVideos() as $video) {
+            dump($video->getTitle());
+        }
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+
+    }
+
+    /**
+     * @Route("/delete-user-with-videos/{userId}", name="delete-user-with-videos")
+     */
+    public function deleteUserWithVideos(int $userId)
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['id' => $userId]);
+
+        $entityManager->remove($user);
+        $entityManager->flush();
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+
+    }
+
+    /**
+     * @Route("/one-to-one", name="one-to-one")
+     */
+    public function oneToOne()
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $user = new User();
+        $user->setName('Laura');
+        $address = new Address();
+        $address->setStreet('Wielka');
+        $address->setStreet('10');
+        $user->setAddress($address);
+
+        $entityManager->persist($user);
+        // $entityManager->persist($address); // required if "cascade={persist}" is not set in annotation for User object
+
+        dump($user->getAddress()->getStreet());
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+
+
+    }
+
+    /**
+     * @Route("many-to-many", name="many-to-many")
+     */
+    public function manyToMany()
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $user1 = $entityManager->getRepository(User::class)->find(1);
+        $user2 = $entityManager->getRepository(User::class)->find(2);
+        $user3 = $entityManager->getRepository(User::class)->find(3);
+        $user4 = $entityManager->getRepository(User::class)->find(4);
+        
+        $user1->addFollowed($user2);
+        $user1->addFollowed($user3);
+        $user1->addFollowed($user4);
+
+        $entityManager->flush();
+
+        dump($user1->getFollowed()->count());
+        dump($user1->getFollowing()->count());
+        dump($user4->getFollowing()->count());
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+
+
+    }
+
+    /**
+     * @Route("query-builder", name="query-builder")
+     */
+    public function queryBuilder()
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        //$user = $entityManager->getRepository(User::class)->find(1); // LAZY LOADING!!!
+        $user = $entityManager->getRepository(User::class)->findWithVideos(2); // EAGER LOADING!!!
+        dump($user);
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+
+
+    }
+
+    /**
+     * @Route("inheritance-single-table", name="inheritance-single-table")
+     */
+    public function inheritanceSingleTable()
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $items = $entityManager->getRepository(Pdf::class)->findAll();
+
+        dump($items);
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+
+    }
+
+    /**
+     * @Route("polymorphic-query", name="polymorphic-query")
+     */
+    public function polymorphicQuery()
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        
+        // $items = $entityManager->getRepository(File::class)->findAll();
+        // dump($items);
+
+        $author = $entityManager->getRepository(Author::class)->findByIdWithPdf(2);
+        dump($author);
+        foreach($author->getFiles() as $file)
+        {
+            // if($file instanceof Pdf)
+            // {
+                dump($file->getFilename());
+            // }
+        }
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
 
     }
 
