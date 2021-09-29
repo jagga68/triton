@@ -4,12 +4,15 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    # admin_email: 'admin@admin.com'
 
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        # bind:
+        #     $globalParam: 'May (must?) be used in all services defined here'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -23,3 +26,36 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # App\Services\MyService:
+    #     arguments: 
+    #         # $param: 'my parameter'
+    #         # $param2: 'my second parameter'
+    #         # $adminEmail: '%admin_email%'
+    #         #
+    #         # below is not needed when autowire: true
+    #         # $secondService: '@App\Services\MySecondService'
+    #     properties:
+    #         my: '@App\Services\MySecondService'
+    #         # logger: '@monolog.logger'
+
+    # App\Services\MyService:
+    #     arguments:
+    #         $service: '@App\Services\MySecondService'
+
+    # App\Services\MySecondService:
+    #     lazy: true
+
+    # alias:
+    # app.myservice:
+    #     class: App\Services\MyService
+
+    # App\Services\MyService: '@app.myservice'
+
+    # App\Services\MyService:
+    #     tags:
+    #         - { name: doctrine.event_listener, event: postFlush }
+    #         - { name: kernel.cache_clearer }
+
+    App\Services\ServiceInterface: '@App\Services\MyService'
+
