@@ -39,6 +39,16 @@ class Video extends File
      */
     private $created_at;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Assert\File(
+     * maxSize = "4096k",
+     * mimeTypes = {"video/mp4", "application/pdf", "application/x-pdf"},
+     * mimeTypesMessage = "Please select a valid video"
+     * )
+     */
+    private $file;
+
     public function getTitle(): ?string
     {
         return $this->title;
@@ -95,6 +105,18 @@ class Video extends File
     public function setCreatedAt(\DateTimeInterface $created_at): self
     {
         $this->created_at = $created_at;
+
+        return $this;
+    }
+
+    public function getFile(): ?string
+    {
+        return $this->file;
+    }
+
+    public function setFile(string $file): self
+    {
+        $this->file = $file;
 
         return $this;
     }

@@ -17,12 +17,9 @@ class FormController extends AbstractController
     public function index(Request $request): Response
     {
         $entityManager = $this->getDoctrine()->getManager();
-        $videos = $entityManager->getRepository(Video::class)->findAll();
-        dump($videos);
+        // $videos = $entityManager->getRepository(Video::class)->findAll();
 
         $video = new Video();
-        // $video->setTitle('Create a vlog video');
-        // $video->setCreatedAt(new \DateTime('tomorrow'));
         $video->setFilename('Filename from form');
         $video->setAuthor(null);
         $video->setDescription('Description from form');
@@ -30,14 +27,23 @@ class FormController extends AbstractController
         $video->setFormat('mpeg-2');
         $video->setSize(20000);
     
+        // $video = $entityManager->getRepository(Video::class)->find(12);
+        // dump($video);
 
         $form = $this->createForm(VideoFormType::class, $video);
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
+            $file = $form->get('file')->getData();
+            // $fileName = $file->getClientOriginalName() . '.' . $file->getClientOriginalExtension();
+            $fileName = sha1(random_bytes(14)) . '.' . $file->guessExtension();
+            $file->move(
+                $this->getParameter('videos_directory'),
+                $fileName
+            );
+            $video->setFile($fileName);
             $entityManager->persist($video); 
             $entityManager->flush();
-            // dump($form->getData());
             return $this->redirectToRoute('form');
         }
 

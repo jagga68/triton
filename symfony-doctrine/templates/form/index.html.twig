@@ -16,11 +16,32 @@
         <li>Your controller at <code><a href="{{ 'C:/xampp/htdocs/triton/symfony-doctrine/src/Controller/FormController.php'|file_link(0) }}">src/Controller/FormController.php</a></code></li>
         <li>Your template at <code><a href="{{ 'C:/xampp/htdocs/triton/symfony-doctrine/templates/form/index.html.twig'|file_link(0) }}">templates/form/index.html.twig</a></code></li>
     </ul>
-    {% form_theme form 'form_table_layout.html.twig' %}
+
+    {% form_theme form 'bootstrap_4_layout.html.twig' %}
+
     {# {{ form_start(form) }}
     {{ form_widget(form) }}
     {{ form_end(form) }} #}
-    {{ form(form) }}
+    
+    {# {{ form(form) }} #} {# full form with default elements order #}
+
+    {# form with custom elements order #}
+    {{ form_start(form) }}
+    {{ form_label(form.title) }}
+    {{ form_widget(form.title) }}
+    {% if form.created_at is defined %}
+        {{ form_label(form.created_at) }}
+        {{ form_widget(form.created_at) }}
+    {% endif %}
+    {{ form_label(form.file) }}
+    {{ form_widget(form.file) }}
+    {{ form_label(form.agreeTerms) }}
+    {{ form_widget(form.agreeTerms) }}
+    {{ form_label(form.save) }}
+    {{ form_widget(form.save) }}
+    {{ form_end(form) }}
+
+
 
 </div>
 {% endblock %}
