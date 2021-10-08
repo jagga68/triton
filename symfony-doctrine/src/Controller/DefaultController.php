@@ -8,10 +8,14 @@ use App\Entity\Author;
 use App\Entity\File;
 use App\Entity\Video;
 use App\Entity\Pdf;
+use App\Entity\SecurityUser;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 
 class DefaultController extends AbstractController
 {
@@ -27,6 +31,80 @@ class DefaultController extends AbstractController
     }
 
     /**
+     * @Route("/home", name="home")
+     */
+    public function home(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
+    {
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $users = $entityManager->getRepository(SecurityUser::class)->findAll();
+        dump($users);
+
+        // $user = new SecurityUser;
+        // $user->setEmail('admin@user.com');
+        // $pass = $passwordEncoder->encodePassword($user, '123');
+        // $user->setPassword($pass);
+        // $user->setRoles(['ROLE_ADMIN']);
+
+        // $video = new Video();
+        // $video->setFilename('Filename from form' . rand(1,1000));
+        // $video->setAuthor(null);
+        // $video->setDescription('Description ');
+        // $video->setDuration(100 + rand(1,100));
+        // $video->setFormat('mpeg-2');
+        // $video->setSize(20000 + rand (100,500));
+        // $video->setCreatedAt(new \DateTime());
+
+        // $entityManager->persist($video);
+        // $user->addVideo($video);
+        // $entityManager->persist($user);        
+        // $entityManager->flush();
+
+        // dump($user->getId());
+        // dump($video->getId());
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+    }
+
+    /**
+     * @Route("/home/{id}/delete-video", name="delete-video")
+     * @Security("user.getId() == video.getSecurityUser().getId()")
+     */
+    public function deleteVideo(Request $request, UserPasswordEncoderInterface $passwordEncoder, Video $video): Response
+    {
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $users = $entityManager->getRepository(SecurityUser::class)->findAll();
+        dump($users);
+        dump($video);
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+    }
+
+    /**
+     * @Route("/admin", name="admin")
+     */
+    public function admin(): Response
+    {
+
+
+        // example of in-controller auth:
+        // $this->denyAccesUnlessGranted('IS_AUTHENTICATED_FULLY');
+        // $this->denyAccesUnlessGranted('IS_AUTHENTICATED_REMEMBERED');
+        // $this->denyAccesUnlessGranted('ROLE_ADMIN');
+
+
+
+        return $this->render('default/index.html.twig', [
+            'controller_name' => 'DefaultController',
+        ]);
+    }
+
+    /**
      * @Route("/add-users", name="add-users")
      */
     public function addUsers(): Response
@@ -35,15 +113,15 @@ class DefaultController extends AbstractController
         $entityManager = $this->getDoctrine()->getManager();
 
         $user1 = new User();
-        $user1->setName('Magda' . random_int(0,1000));
+        $user1->setName('Magda' . random_int(0, 1000));
         $entityManager->persist($user1);
-        
+
         $user2 = new User();
-        $user2->setName('Jacek' . random_int(0,1000));
+        $user2->setName('Jacek' . random_int(0, 1000));
         $entityManager->persist($user2);
 
         $user3 = new User();
-        $user3->setName('Laura' . random_int(0,1000));
+        $user3->setName('Laura' . random_int(0, 1000));
         $entityManager->persist($user3);
 
         $entityManager->flush();
@@ -63,13 +141,10 @@ class DefaultController extends AbstractController
     {
 
         $repository = $this->getDoctrine()->getRepository(User::class);
-        
-        if(is_null($id))
-        {
+
+        if (is_null($id)) {
             $users_array = $repository->findAll();
-        }
-        else
-        {
+        } else {
             $users_array = $repository->findBy(['id' => $id]);
         }
 
@@ -82,9 +157,8 @@ class DefaultController extends AbstractController
         return $this->render('default/show-users.html.twig', [
             'users' => $users_array,
         ]);
-        
     }
-    
+
     /**
      * @Route("/update-user/{id}", name="update-user")
      */
@@ -92,19 +166,19 @@ class DefaultController extends AbstractController
     {
         $entityManager = $this->getDoctrine()->getManager();
         $user = $entityManager->getRepository(User::class)->find($id);
-        
+
         if (!$user) {
             throw $this->createNotFoundException(
-                'No user found for id '.$id
+                'No user found for id ' . $id
             );
         }
 
-        $user->setName('New Name ' . random_int(0,1000));
+        $user->setName('New Name ' . random_int(0, 1000));
         $entityManager->flush();
 
         return $this->redirectToRoute('show-users');
     }
-    
+
     /**
      * @Route("/delete-user/{id}", name="delete-user")
      */
@@ -115,7 +189,7 @@ class DefaultController extends AbstractController
 
         if (!$user) {
             throw $this->createNotFoundException(
-                'No user found for id '.$id
+                'No user found for id ' . $id
             );
         }
 
@@ -139,14 +213,13 @@ class DefaultController extends AbstractController
                 ';
 
         $stmt = $connection->prepare($sql);
-        $stmt->execute(['id' => 3 ]);
+        $stmt->execute(['id' => 3]);
 
         $users_array = $stmt->fetchAll();
 
         return $this->render('default/show-users.html.twig', [
             'users' => $users_array,
         ]);
-
     }
 
     /**
@@ -160,7 +233,6 @@ class DefaultController extends AbstractController
         //dump($user);
 
         return $this->redirectToRoute('show-users', ['id' => $user->getId()]);
-
     }
 
     /**
@@ -176,7 +248,6 @@ class DefaultController extends AbstractController
         $entityManager->flush();
 
         return new Response('OK!');
-
     }
 
     /**
@@ -189,8 +260,7 @@ class DefaultController extends AbstractController
         $user = new User();
         $user->setName('Magda');
 
-        for ($i=3; $i < 6; $i++) 
-        { 
+        for ($i = 3; $i < 6; $i++) {
             $video = new Video();
             $video->setTitle('Video title ' . $i);
             $user->addVideo($video);
@@ -206,7 +276,6 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
     }
 
     /**
@@ -223,7 +292,6 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
     }
 
     /**
@@ -240,7 +308,6 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
     }
 
     /**
@@ -265,8 +332,6 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
-
     }
 
     /**
@@ -280,7 +345,7 @@ class DefaultController extends AbstractController
         $user2 = $entityManager->getRepository(User::class)->find(2);
         $user3 = $entityManager->getRepository(User::class)->find(3);
         $user4 = $entityManager->getRepository(User::class)->find(4);
-        
+
         $user1->addFollowed($user2);
         $user1->addFollowed($user3);
         $user1->addFollowed($user4);
@@ -294,8 +359,6 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
-
     }
 
     /**
@@ -311,8 +374,6 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
-
     }
 
     /**
@@ -328,7 +389,6 @@ class DefaultController extends AbstractController
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
     }
 
     /**
@@ -337,24 +397,21 @@ class DefaultController extends AbstractController
     public function polymorphicQuery()
     {
         $entityManager = $this->getDoctrine()->getManager();
-        
+
         // $items = $entityManager->getRepository(File::class)->findAll();
         // dump($items);
 
         $author = $entityManager->getRepository(Author::class)->findByIdWithPdf(2);
         dump($author);
-        foreach($author->getFiles() as $file)
-        {
+        foreach ($author->getFiles() as $file) {
             // if($file instanceof Pdf)
             // {
-                dump($file->getFilename());
+            dump($file->getFilename());
             // }
         }
 
         return $this->render('default/index.html.twig', [
             'controller_name' => 'DefaultController',
         ]);
-
     }
-
 }

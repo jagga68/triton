@@ -199,6 +199,9 @@
     "symfony/event-dispatcher-contracts": {
         "version": "v2.4.0"
     },
+    "symfony/expression-language": {
+        "version": "v5.3.7"
+    },
     "symfony/filesystem": {
         "version": "v5.3.4"
     },
@@ -275,6 +278,9 @@
             "ref": "877d853a05c6713665a2f4b954734592680abff6"
         }
     },
+    "symfony/password-hasher": {
+        "version": "v5.3.8"
+    },
     "symfony/phpunit-bridge": {
         "version": "5.3",
         "recipe": {
@@ -341,6 +347,30 @@
     },
     "symfony/runtime": {
         "version": "v5.3.4"
+    },
+    "symfony/security-bundle": {
+        "version": "5.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "5.3",
+            "ref": "9c4fcf79873f7400c885b90935f7163233615d6f"
+        },
+        "files": [
+            "./config/packages/security.yaml"
+        ]
+    },
+    "symfony/security-core": {
+        "version": "v5.3.8"
+    },
+    "symfony/security-csrf": {
+        "version": "v5.3.4"
+    },
+    "symfony/security-guard": {
+        "version": "v5.3.7"
+    },
+    "symfony/security-http": {
+        "version": "v5.3.8"
     },
     "symfony/service-contracts": {
         "version": "v2.4.0"
