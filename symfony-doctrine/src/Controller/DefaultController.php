@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class DefaultController extends AbstractController
 {
@@ -33,12 +34,16 @@ class DefaultController extends AbstractController
     /**
      * @Route("/home", name="home")
      */
-    public function home(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
+    public function home(Request $request, UserPasswordEncoderInterface $passwordEncoder, TranslatorInterface $translator): Response
     {
 
         $entityManager = $this->getDoctrine()->getManager();
         $users = $entityManager->getRepository(SecurityUser::class)->findAll();
         dump($users);
+
+        $translated = $translator->trans('some.key1');
+        dump($translated);
+        dump($request->getLocale());
 
         // $user = new SecurityUser;
         // $user->setEmail('admin@user.com');

@@ -6,6 +6,7 @@
 parameters:
     # admin_email: 'admin@admin.com'
     videos_directory: '%kernel.project_dir%/public/uploads/videos'
+    locale: 'pl'
 
 services:
     # default configuration for services in *this* file
